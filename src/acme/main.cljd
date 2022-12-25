@@ -1,0 +1,149 @@
+(ns acme.main
+  (:require ["package:flutter/material.dart" :as m]
+            ["package:flutter/rendering.dart" :as fr]
+            ["package:flutter/services.dart" :as ds]
+            ["package:flutter/widgets.dart" :as fw]
+            ["dart:typed_data" :as td]
+            ["dart:convert" :as convert]
+            ["dart:io" :as io :refer [File stdout]]
+            [cljd.reader :as r]
+            [cljd.flutter.alpha2 :refer [widget]]))
+
+(def default-text-field-value "RIGS KYI BU RNAMS LEGS PAR DGE BA'I SEMS KYIS NYON CIG")
+
+(defn dictionary-component
+  [dictionary]
+  (widget
+   :let [state (atom {:switch-on? true})]
+   :watch [as state]
+   (m/Scaffold
+    #_#_.appBar (m/AppBar
+             .title
+             (m/Text (:hello dictionary))))
+   .body
+   m/Column
+   .children
+   [(m/Container
+     .padding (m/EdgeInsets.all 8)
+     .margin (m/EdgeInsets.only .top 8)
+     .child (m/TextFormField
+             .initialValue default-text-field-value
+             .decoration (m/InputDecoration
+                          .border
+                          (m/OutlineInputBorder))
+             .maxLines 5))
+    (m/Row
+     .children
+     [(m/Switch
+       .value (:switch-on? @state)
+       .onChanged (fn [value] (swap! state assoc :switch-on? value) nil))
+      (m/Text "Word Guessing")])
+    (m/ExpansionTile
+     .title (m/Text "RIGS KYI BU")
+     .children [(m/Row
+                 .children
+                 [(m/Container
+                   .padding (m/EdgeInsets.all 16)
+                   .child
+                   (m/Column
+                    .crossAxisAlignment fr/CrossAxisAlignment.start
+                    .children
+                    [(m/Text "tshig mdzod chen mo" .style (m/TextStyle .fontWeight m/FontWeight.bold))
+                     (m/Text "")
+                     (m/Text "• slob dpon gyis rang gi slob ma rnams la 'bod pa'i gces ming/")
+                     (m/Text "")
+                     (m/Text "Jim Valby" .style (m/TextStyle .fontWeight m/FontWeight.bold))
+                     (m/Text "")
+                     (m/Text "• noble and honored sirs, noble son")
+                     (m/Text "")
+                     (m/Text "Yoghacharabhumi" .style (m/TextStyle .fontWeight m/FontWeight.bold))
+                     (m/Text "")
+                     (m/Text "• kula-putra")]))])])
+    (m/ExpansionTile
+     .title (m/Text "RNAMS")
+     .children [(m/Row
+                 .children
+                 [(m/Container
+                   .padding (m/EdgeInsets.all 16)
+                   .child
+                   (m/Column
+                    .crossAxisAlignment fr/CrossAxisAlignment.start
+                    .children
+                    []))])])
+    (m/ExpansionTile
+     .title (m/Text "LEGS PAR")
+     .children [(m/Row
+                 .children
+                 [(m/Container
+                   .padding (m/EdgeInsets.all 16)
+                   .child
+                   (m/Column
+                    .crossAxisAlignment fr/CrossAxisAlignment.start
+                    .children
+                    []))])])
+    (m/ExpansionTile
+     .title (m/Text "DGE BA")
+     .children [(m/Row
+                 .children
+                 [(m/Container
+                   .padding (m/EdgeInsets.all 16)
+                   .child
+                   (m/Column
+                    .crossAxisAlignment fr/CrossAxisAlignment.start
+                    .children
+                    []))])])
+    (m/ExpansionTile
+     .title (m/Text "SEMS KYIS")
+     .children [(m/Row
+                 .children
+                 [(m/Container
+                   .padding (m/EdgeInsets.all 16)
+                   .child
+                   (m/Column
+                    .crossAxisAlignment fr/CrossAxisAlignment.start
+                    .children
+                    []))])])
+    (m/ExpansionTile
+     .title (m/Text "NYON CIG")
+     .children [(m/Row
+                 .children
+                 [(m/Container
+                   .padding (m/EdgeInsets.all 16)
+                   .child
+                   (m/Column
+                    .crossAxisAlignment fr/CrossAxisAlignment.start
+                    .children
+                    []))])])]))
+
+(defn ByteData->utf8
+  [^td/ByteData byte-data]
+  (let [buffer (.-buffer byte-data)]
+    (.asUint8List buffer (.-offsetInBytes byte-data) (.-lengthInBytes byte-data))))
+
+(defn get-edn-resource [path]
+  (let [file (await (ds/rootBundle.load path))]
+    #_(->> file
+         ByteData->utf8
+         (io/gzip.decode)
+         (convert/utf8.decode))
+    (await (r/read-string (->> file
+                                 ByteData->utf8
+                                 (io/gzip.decode)
+                                 (convert/utf8.decode))))))
+
+(defn main []
+  (fw/WidgetsFlutterBinding.ensureInitialized)
+  (m/runApp
+   (m/MaterialApp
+    .title "Welcome to Flutter"
+    .theme (m/ThemeData .primarySwatch m/Colors.grey)
+    .home
+    (widget
+     :watch [edn (get-edn-resource "assets/dictionary.edn.gz")]
+     (if edn
+       (m/Text "Loaded")
+       (m/Text "Loading")))
+    #_(dictionary-component dictionary))))
+
+
+
