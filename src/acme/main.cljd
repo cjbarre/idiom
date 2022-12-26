@@ -11,6 +11,25 @@
 
 (def default-text-field-value "RIGS KYI BU RNAMS LEGS PAR DGE BA'I SEMS KYIS NYON CIG")
 
+(defn word-tile-component
+  [{:keys [word lookup-results]}]
+  (m/ExpansionTile
+   .title (m/Text word)
+   .children [(m/Row
+               .children
+               [(m/Container
+                 .padding (m/EdgeInsets.all 16)
+                 .child
+                 (m/Column
+                  .crossAxisAlignment fr/CrossAxisAlignment.start
+                  .children
+                  (mapcat (fn [{:keys [source definitions]}]
+                            [(m/Text source .style (m/TextStyle .fontWeight m/FontWeight.bold))
+                             (m/Text "")
+                             (m/Text (str "• " definitions))
+                             (m/Text "")])
+                          lookup-results)))])]))
+
 (defn dictionary-component
   [dictionary]
   (widget
@@ -21,6 +40,7 @@
              .title
              (m/Text (:hello dictionary))))
    .body
+   m/SingleChildScrollView
    m/Column
    .children
    [(m/Container
@@ -38,82 +58,29 @@
        .value (:switch-on? @state)
        .onChanged (fn [value] (swap! state assoc :switch-on? value) nil))
       (m/Text "Word Guessing")])
-    (m/ExpansionTile
-     .title (m/Text "RIGS KYI BU")
-     .children [(m/Row
-                 .children
-                 [(m/Container
-                   .padding (m/EdgeInsets.all 16)
-                   .child
-                   (m/Column
-                    .crossAxisAlignment fr/CrossAxisAlignment.start
-                    .children
-                    [(m/Text "tshig mdzod chen mo" .style (m/TextStyle .fontWeight m/FontWeight.bold))
-                     (m/Text "")
-                     (m/Text "• slob dpon gyis rang gi slob ma rnams la 'bod pa'i gces ming/")
-                     (m/Text "")
-                     (m/Text "Jim Valby" .style (m/TextStyle .fontWeight m/FontWeight.bold))
-                     (m/Text "")
-                     (m/Text "• noble and honored sirs, noble son")
-                     (m/Text "")
-                     (m/Text "Yoghacharabhumi" .style (m/TextStyle .fontWeight m/FontWeight.bold))
-                     (m/Text "")
-                     (m/Text "• kula-putra")]))])])
-    (m/ExpansionTile
-     .title (m/Text "RNAMS")
-     .children [(m/Row
-                 .children
-                 [(m/Container
-                   .padding (m/EdgeInsets.all 16)
-                   .child
-                   (m/Column
-                    .crossAxisAlignment fr/CrossAxisAlignment.start
-                    .children
-                    []))])])
-    (m/ExpansionTile
-     .title (m/Text "LEGS PAR")
-     .children [(m/Row
-                 .children
-                 [(m/Container
-                   .padding (m/EdgeInsets.all 16)
-                   .child
-                   (m/Column
-                    .crossAxisAlignment fr/CrossAxisAlignment.start
-                    .children
-                    []))])])
-    (m/ExpansionTile
-     .title (m/Text "DGE BA")
-     .children [(m/Row
-                 .children
-                 [(m/Container
-                   .padding (m/EdgeInsets.all 16)
-                   .child
-                   (m/Column
-                    .crossAxisAlignment fr/CrossAxisAlignment.start
-                    .children
-                    []))])])
-    (m/ExpansionTile
-     .title (m/Text "SEMS KYIS")
-     .children [(m/Row
-                 .children
-                 [(m/Container
-                   .padding (m/EdgeInsets.all 16)
-                   .child
-                   (m/Column
-                    .crossAxisAlignment fr/CrossAxisAlignment.start
-                    .children
-                    []))])])
-    (m/ExpansionTile
-     .title (m/Text "NYON CIG")
-     .children [(m/Row
-                 .children
-                 [(m/Container
-                   .padding (m/EdgeInsets.all 16)
-                   .child
-                   (m/Column
-                    .crossAxisAlignment fr/CrossAxisAlignment.start
-                    .children
-                    []))])])]))
+    (word-tile-component
+     {:word "RIGS KYI BU"
+      :lookup-results [{:source "tshig mdzod chen mo"
+                        :definitions "slob dpon gyis rang gi slob ma rnams la 'bod pa'i gces ming/"}
+                       {:source "Jim Valby"
+                        :definitions "noble and honored sirs, noble son"}
+                       {:source "Yoghacharabhumi"
+                        :definitions "kula-putra"}]})
+    (word-tile-component
+     {:word "RNAMS"
+      :lookup-results []})
+    (word-tile-component
+     {:word "LEGS PAR"
+      :lookup-results []})
+    (word-tile-component
+     {:word "DGE BA"
+      :lookup-results []})
+    (word-tile-component
+     {:word "SEMS KYIS"
+      :lookup-results []})
+    (word-tile-component
+     {:word "NYON CIG"
+      :lookup-results []})]))
 
 (defn ByteData->utf8
   [^td/ByteData byte-data]
