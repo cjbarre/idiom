@@ -63,6 +63,15 @@ flutter:
   assets:
     - assets/dictionary.edn.gz
     - assets/test-file.edn.gz
+    - assets/tshig-mdzod-chen-mo.edn.gz
+    - assets/jim-valby.edn.gz
+    - assets/jim-valby-take-10.edn.gz
+    - assets/jim-valby-take-500.edn.gz
+    - assets/jim-valby-take-10000.edn.gz
+    - assets/jim-valby-take-5000.edn.gz
+    - assets/jim-valby-take-1000.edn.gz
+    - assets/jim-valby-take-5000-vec.edn.gz
+    - assets/jim-valby-take-5000-newlines.edn.gz
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
