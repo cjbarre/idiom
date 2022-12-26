@@ -87,30 +87,32 @@
   (let [buffer (.-buffer byte-data)]
     (.asUint8List buffer (.-offsetInBytes byte-data) (.-lengthInBytes byte-data))))
 
-(defn get-edn-resource [path]
+(defn get-gzipped-json-asset [path]
   (let [file (await (ds/rootBundle.load path))]
-    #_(->> file
+    (->> file
          ByteData->utf8
          (io/gzip.decode)
-         (convert/utf8.decode))
-    (await (r/read-string (->> file
+         (convert/utf8.decode)
+         (convert/json.decode))
+    #_(await (r/read-string (->> file
                                  ByteData->utf8
                                  (io/gzip.decode)
                                  (convert/utf8.decode))))))
 
 (defn main []
   (fw/WidgetsFlutterBinding.ensureInitialized)
-  (m/runApp
-   (m/MaterialApp
-    .title "Welcome to Flutter"
-    .theme (m/ThemeData .primarySwatch m/Colors.grey)
-    .home
-    (widget
-     :watch [edn (get-edn-resource "assets/dictionary.edn.gz")]
-     (if edn
-       (m/Text "Loaded")
-       (m/Text "Loading")))
-    #_(dictionary-component dictionary))))
+  (let [dictionary (await (get-gzipped-json-asset "assets/dictionary.json.gz"))]
+    (m/runApp
+     (m/MaterialApp
+      .title "Welcome to Flutter"
+      .theme (m/ThemeData .primarySwatch m/Colors.grey)
+      .home
+      #_(widget
+         :watch [json (get-gzipped-json-asset "assets/dictionary.json.gz")]
+         (if json
+           (m/Text (str "Loaded " (count json) " " (-> json first key)))
+           (m/Text "Loading")))
+      (dictionary-component dictionary)))))
 
 
 
