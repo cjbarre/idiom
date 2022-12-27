@@ -13,58 +13,6 @@
 
 (def default-text-field-value "RIGS KYI BU RNAMS LEGS PAR DGE BA'I SEMS KYIS NYON CIG")
 
-#_(defn dictionary-component
-    [dictionary]
-    (widget
-     :let [state (atom {:switch-on? true})]
-     :watch [as state]
-     (m/Scaffold
-      #_#_.appBar (m/AppBar
-                   .title
-                   (m/Text (:hello dictionary))))
-     .body
-     m/SingleChildScrollView
-     m/Column
-     .children
-     [(m/Container
-       .padding (m/EdgeInsets.all 8)
-       .margin (m/EdgeInsets.only .top 8)
-       .child (m/TextFormField
-               .initialValue default-text-field-value
-               .decoration (m/InputDecoration
-                            .border
-                            (m/OutlineInputBorder))
-               .maxLines 5))
-      (m/Row
-       .children
-       [(m/Switch
-         .value (:switch-on? @state)
-         .onChanged (fn [value] (swap! state assoc :switch-on? value) nil))
-        (m/Text "Word Guessing")])
-      (word-tile-component
-       {:word "RIGS KYI BU"
-        :lookup-results [{:source "tshig mdzod chen mo"
-                          :definitions "slob dpon gyis rang gi slob ma rnams la 'bod pa'i gces ming/"}
-                         {:source "Jim Valby"
-                          :definitions "noble and honored sirs, noble son"}
-                         {:source "Yoghacharabhumi"
-                          :definitions "kula-putra"}]})
-      (word-tile-component
-       {:word "RNAMS"
-        :lookup-results []})
-      (word-tile-component
-       {:word "LEGS PAR"
-        :lookup-results []})
-      (word-tile-component
-       {:word "DGE BA"
-        :lookup-results []})
-      (word-tile-component
-       {:word "SEMS KYIS"
-        :lookup-results []})
-      (word-tile-component
-       {:word "NYON CIG"
-        :lookup-results []})]))
-
 (defn handle-special-cases
   [word]
   (-> word
