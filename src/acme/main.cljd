@@ -6,10 +6,127 @@
             ["dart:typed_data" :as td]
             ["dart:convert" :as convert]
             ["dart:io" :as io :refer [File stdout]]
+            ["dart:core" :as c]
             [cljd.reader :as r]
-            [cljd.flutter.alpha2 :refer [widget]]))
+            [cljd.flutter.alpha2 :refer [widget]]
+            [cljd.string :as s]))
 
 (def default-text-field-value "RIGS KYI BU RNAMS LEGS PAR DGE BA'I SEMS KYIS NYON CIG")
+
+#_(defn dictionary-component
+    [dictionary]
+    (widget
+     :let [state (atom {:switch-on? true})]
+     :watch [as state]
+     (m/Scaffold
+      #_#_.appBar (m/AppBar
+                   .title
+                   (m/Text (:hello dictionary))))
+     .body
+     m/SingleChildScrollView
+     m/Column
+     .children
+     [(m/Container
+       .padding (m/EdgeInsets.all 8)
+       .margin (m/EdgeInsets.only .top 8)
+       .child (m/TextFormField
+               .initialValue default-text-field-value
+               .decoration (m/InputDecoration
+                            .border
+                            (m/OutlineInputBorder))
+               .maxLines 5))
+      (m/Row
+       .children
+       [(m/Switch
+         .value (:switch-on? @state)
+         .onChanged (fn [value] (swap! state assoc :switch-on? value) nil))
+        (m/Text "Word Guessing")])
+      (word-tile-component
+       {:word "RIGS KYI BU"
+        :lookup-results [{:source "tshig mdzod chen mo"
+                          :definitions "slob dpon gyis rang gi slob ma rnams la 'bod pa'i gces ming/"}
+                         {:source "Jim Valby"
+                          :definitions "noble and honored sirs, noble son"}
+                         {:source "Yoghacharabhumi"
+                          :definitions "kula-putra"}]})
+      (word-tile-component
+       {:word "RNAMS"
+        :lookup-results []})
+      (word-tile-component
+       {:word "LEGS PAR"
+        :lookup-results []})
+      (word-tile-component
+       {:word "DGE BA"
+        :lookup-results []})
+      (word-tile-component
+       {:word "SEMS KYIS"
+        :lookup-results []})
+      (word-tile-component
+       {:word "NYON CIG"
+        :lookup-results []})]))
+
+(defn handle-special-cases
+  [word]
+  (-> word
+      (s/replace #"pa'i" "pa")
+      (s/replace #"ba'i" "ba")))
+
+(defn lookup-word [dictionary text]
+  (loop [text (->> (s/lower-case text)
+                   (handle-special-cases))
+         drop-num 0]
+    (let [term-seq (->> (-> text
+                            (s/split #"\s"))
+                        (drop-last drop-num))
+          proposed-term (if (= 1 (count term-seq))
+                          (-> (first term-seq)
+                              #_(string/replace #"ts" "tsh")
+                              #_(string/replace #"tz" "ts"))
+                          (-> (->> term-seq
+                                   (s/join " ")
+                                   (s/lower-case))
+                              #_(string/replace #"ts" "tsh")
+                              #_(string/replace #"tz" "ts")))]
+      #_(prn term-seq)
+      #_(prn proposed-term)
+      (if (s/blank? proposed-term)
+        nil
+        (let [result (get dictionary proposed-term)]
+          #_(prn result)
+          (cond
+            (and (not result) (<= (count term-seq) 1)) nil
+            (not result) (recur
+                          text
+                          (inc drop-num))
+            :else proposed-term))))))
+
+(defn lookup-words
+  [dictionary text]
+  #_(prn text)
+  (loop [current-text text
+         acc []]
+    (if (or (s/blank? current-text) (nil? current-text))
+      acc
+      (let [word (lookup-word dictionary current-text)
+            drop-num (count (s/split word #"\s"))]
+        (recur (s/join " " (drop drop-num (s/split current-text #"\s"))) (conj acc word))))))
+
+(defn lookup-sections
+  [dictionary text]
+  (when text
+    (let [sections (->> (-> text
+                            (s/replace #"\n|\r\n" " ")
+                            (s/replace #"\^|\#" "")
+                            (s/split  #"\,"))
+                        (filter #(and (not (nil? %)) (not (s/blank? %)))))]
+      (map #(lookup-words dictionary %) sections))))
+
+(defn lookup-definitions
+  [dictionary words]
+  (map #(assoc {}
+               (s/upper-case (or % "Not Found"))
+               (sort-by (fn [x] (get x "priority")) (get-in dictionary [(handle-special-cases %) "definitions"])))
+       (filter #(not (nil? %)) words)))
 
 (defn word-tile-component
   [{:keys [word lookup-results]}]
@@ -23,64 +140,56 @@
                  (m/Column
                   .crossAxisAlignment fr/CrossAxisAlignment.start
                   .children
-                  (mapcat (fn [{:keys [source definitions]}]
-                            [(m/Text source .style (m/TextStyle .fontWeight m/FontWeight.bold))
+                  (mapcat (fn [x]
+                            [(m/Text (get x "source") .style (m/TextStyle .fontWeight m/FontWeight.bold))
                              (m/Text "")
-                             (m/Text (str "• " definitions))
+                             (m/Text (str "• " (get x "definition")))
+                             #_(m/Text (->> (s/split (get x "definition") #"/")
+                                            (filter #(and (not (s/blank? %)) (not (nil? %))))
+                                            (map #(str "• " %))
+                                            (s/join "\n")))
                              (m/Text "")])
                           lookup-results)))])]))
 
 (defn dictionary-component
   [dictionary]
   (widget
-   :let [state (atom {:switch-on? true})]
+   :let [state (atom {:switch-on? true
+                      :search-string default-text-field-value})]
    :watch [as state]
    (m/Scaffold
     #_#_.appBar (m/AppBar
-             .title
-             (m/Text (:hello dictionary))))
+                 .title
+                 (m/Text (:hello dictionary))))
    .body
    m/SingleChildScrollView
    m/Column
    .children
-   [(m/Container
-     .padding (m/EdgeInsets.all 8)
-     .margin (m/EdgeInsets.only .top 8)
-     .child (m/TextFormField
-             .initialValue default-text-field-value
-             .decoration (m/InputDecoration
-                          .border
-                          (m/OutlineInputBorder))
-             .maxLines 5))
-    (m/Row
-     .children
-     [(m/Switch
-       .value (:switch-on? @state)
-       .onChanged (fn [value] (swap! state assoc :switch-on? value) nil))
-      (m/Text "Word Guessing")])
-    (word-tile-component
-     {:word "RIGS KYI BU"
-      :lookup-results [{:source "tshig mdzod chen mo"
-                        :definitions "slob dpon gyis rang gi slob ma rnams la 'bod pa'i gces ming/"}
-                       {:source "Jim Valby"
-                        :definitions "noble and honored sirs, noble son"}
-                       {:source "Yoghacharabhumi"
-                        :definitions "kula-putra"}]})
-    (word-tile-component
-     {:word "RNAMS"
-      :lookup-results []})
-    (word-tile-component
-     {:word "LEGS PAR"
-      :lookup-results []})
-    (word-tile-component
-     {:word "DGE BA"
-      :lookup-results []})
-    (word-tile-component
-     {:word "SEMS KYIS"
-      :lookup-results []})
-    (word-tile-component
-     {:word "NYON CIG"
-      :lookup-results []})]))
+   (concat [(m/Container
+             .padding (m/EdgeInsets.all 8)
+             .margin (m/EdgeInsets.only .top 8)
+             .child (m/TextFormField
+                     .initialValue (:search-string @state)
+                     .decoration (m/InputDecoration
+                                  .border
+                                  (m/OutlineInputBorder))
+                     .maxLines 5))
+            (m/Row
+             .children
+             [(m/Switch
+               .value (:switch-on? @state)
+               .onChanged (fn [value] (swap! state assoc :switch-on? value) nil))
+              (m/Text "Word Guessing")])]
+
+           (let [text-sections (lookup-sections dictionary (:search-string @state))
+                 dictionary-results (->> text-sections
+                                         (mapcat #(lookup-definitions dictionary %)))
+                 results (mapcat (fn [dictionary-result]
+                                   (mapv #(word-tile-component {:word (key %) :lookup-results (val %)})
+                                         dictionary-result))
+                                 dictionary-results)]
+             
+             results))))
 
 (defn ByteData->utf8
   [^td/ByteData byte-data]
