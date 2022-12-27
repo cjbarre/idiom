@@ -1,0 +1,65 @@
+(ns acme.dictionary
+  (:require [cljd.string :as s]))
+
+(defn handle-special-cases
+  [word]
+  (-> word
+      (s/replace #"pa'i" "pa")
+      (s/replace #"ba'i" "ba")))
+
+(defn lookup-word [dictionary text]
+  (loop [text (->> (s/lower-case text)
+                   (handle-special-cases))
+         drop-num 0]
+    (let [term-seq (->> (-> text
+                            (s/split #"\s"))
+                        (drop-last drop-num))
+          proposed-term (if (= 1 (count term-seq))
+                          (-> (first term-seq)
+                              #_(string/replace #"ts" "tsh")
+                              #_(string/replace #"tz" "ts"))
+                          (-> (->> term-seq
+                                   (s/join " ")
+                                   (s/lower-case))
+                              #_(string/replace #"ts" "tsh")
+                              #_(string/replace #"tz" "ts")))]
+      #_(prn term-seq)
+      #_(prn proposed-term)
+      (if (s/blank? proposed-term)
+        nil
+        (let [result (get dictionary proposed-term)]
+          #_(prn result)
+          (cond
+            (and (not result) (<= (count term-seq) 1)) nil
+            (not result) (recur
+                          text
+                          (inc drop-num))
+            :else proposed-term))))))
+
+(defn lookup-words
+  [dictionary text]
+  #_(prn text)
+  (loop [current-text text
+         acc []]
+    (if (or (s/blank? current-text) (nil? current-text))
+      acc
+      (let [word (lookup-word dictionary current-text)
+            drop-num (count (s/split word #"\s"))]
+        (recur (s/join " " (drop drop-num (s/split current-text #"\s"))) (conj acc word))))))
+
+(defn lookup-sections
+  [dictionary text]
+  (when text
+    (let [sections (->> (-> text
+                            (s/replace #"\n|\r\n" " ")
+                            (s/replace #"\^|\#" "")
+                            (s/split  #"\,"))
+                        (filter #(and (not (nil? %)) (not (s/blank? %)))))]
+      (map #(lookup-words dictionary %) sections))))
+
+(defn lookup-definitions
+  [dictionary words]
+  (map #(assoc {}
+               (s/upper-case (or % "Not Found"))
+               (sort-by (fn [x] (get x "priority")) (get-in dictionary [(handle-special-cases %) "definitions"])))
+       (filter #(not (nil? %)) words)))
