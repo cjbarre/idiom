@@ -12,7 +12,8 @@
             [cljd.string :as s]
             [acme.dictionary :refer [lookup-sections lookup-definitions]]))
 
-(def default-text-field-value "RIGS KYI BU RNAMS LEGS PAR DGE BA'I SEMS KYIS NYON CIG")
+(def default-text-field-value 
+  "RIGS KYI BU RNAMS LEGS PAR DGE BA'I SEMS KYIS NYON CIG")
 
 (defn word-tile-component
   [{:keys [word lookup-results]}]
@@ -53,6 +54,7 @@
              .padding (m/EdgeInsets.all 8)
              .margin (m/EdgeInsets.only .top 8)
              .child (m/TextFormField
+                     .onChanged (fn [text] (swap! state assoc :search-string text) nil)
                      .initialValue (:search-string @state)
                      .decoration (m/InputDecoration
                                   .border

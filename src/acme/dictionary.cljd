@@ -1,5 +1,6 @@
 (ns acme.dictionary
-  (:require [cljd.string :as s]))
+  (:require [cljd.string :as s]
+            ["dart:core" :as c]))
 
 (defn handle-special-cases
   [word]
@@ -44,8 +45,8 @@
     (if (or (s/blank? current-text) (nil? current-text))
       acc
       (let [word (lookup-word dictionary current-text)
-            drop-num (count (s/split word #"\s"))]
-        (recur (s/join " " (drop drop-num (s/split current-text #"\s"))) (conj acc word))))))
+            drop-num (if word (count (s/split word #"\s")) 1)]
+        (recur (s/join " " (drop drop-num (s/split current-text #"\s"))) (if word (conj acc word) acc))))))
 
 (defn lookup-sections
   [dictionary text]
