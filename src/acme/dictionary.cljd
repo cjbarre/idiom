@@ -38,25 +38,29 @@
             :else proposed-term))))))
 
 (defn lookup-words
-  [dictionary text]
+  [dictionary word-guessing-on? text]
   #_(prn text)
-  (loop [current-text text
-         acc []]
-    (if (or (s/blank? current-text) (nil? current-text))
-      acc
-      (let [word (lookup-word dictionary current-text)
-            drop-num (if word (count (s/split word #"\s")) 1)]
-        (recur (s/join " " (drop drop-num (s/split current-text #"\s"))) (if word (conj acc word) acc))))))
+  (if word-guessing-on?
+    (loop [current-text text
+           acc []]
+      (if (or (s/blank? current-text) (nil? current-text))
+        acc
+        (let [word (lookup-word dictionary current-text)
+              drop-num (if word (count (s/split word #"\s")) 1)]
+          (recur (s/join " " (drop drop-num (s/split current-text #"\s"))) (if word (conj acc word) acc)))))
+    (->> (s/split text #" ")
+         (filter #(not (nil? %)))
+         (map #(-> % (s/lower-case) (handle-special-cases))))))
 
 (defn lookup-sections
-  [dictionary text]
+  [dictionary word-guessing-on? text]
   (when text
     (let [sections (->> (-> text
                             (s/replace #"\n|\r\n" " ")
                             (s/replace #"\^|\#" "")
                             (s/split  #"\,"))
                         (filter #(and (not (nil? %)) (not (s/blank? %)))))]
-      (map #(lookup-words dictionary %) sections))))
+      (map #(lookup-words dictionary word-guessing-on? %) sections))))
 
 (defn lookup-definitions
   [dictionary words]
