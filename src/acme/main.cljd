@@ -39,7 +39,7 @@
 (defn dictionary-component
   [dictionary]
   (widget
-   :let [state (atom {:switch-on? true
+   :let [state (atom {:word-guessing-on? true
                       :search-string default-text-field-value})]
    :watch [as state]
    (m/Scaffold
@@ -63,11 +63,11 @@
             (m/Row
              .children
              [(m/Switch
-               .value (:switch-on? @state)
-               .onChanged (fn [value] (swap! state assoc :switch-on? value) nil))
+               .value (:word-guessing-on? @state)
+               .onChanged (fn [value] (swap! state assoc :word-guessing-on? value) nil))
               (m/Text "Word Guessing")])]
 
-           (let [text-sections (lookup-sections dictionary (:search-string @state))
+           (let [text-sections (lookup-sections dictionary (:word-guessing-on? @state) (:search-string @state))
                  dictionary-results (->> text-sections
                                          (mapcat #(lookup-definitions dictionary %)))
                  results (mapcat (fn [dictionary-result]
