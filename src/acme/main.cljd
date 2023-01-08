@@ -94,16 +94,23 @@
                                  (io/gzip.decode)
                                  (convert/utf8.decode))))))
 
+(defn get-json-asset [path]
+  (let [file (await (ds/rootBundle.load path))]
+    (->> file
+         ByteData->utf8
+         (convert/utf8.decode)
+         (convert/json.decode))))
+
 (defn main []
   (fw/WidgetsFlutterBinding.ensureInitialized)
-  (let [dictionary (await (get-gzipped-json-asset "assets/dictionary.json.gz"))]
+  (let [dictionary (await (get-json-asset "assets/dictionary.json"))]
     (m/runApp
      (m/MaterialApp
       .title "Welcome to Flutter"
       .theme (m/ThemeData .primarySwatch m/Colors.grey)
       .home
       #_(widget
-         :watch [json (get-gzipped-json-asset "assets/dictionary.json.gz")]
+         :watch [json (get-gzipped-json-asset "assets/dictionary.json")]
          (if json
            (m/Text (str "Loaded " (count json) " " (-> json first key)))
            (m/Text "Loading")))
