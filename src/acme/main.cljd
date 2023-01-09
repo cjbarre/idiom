@@ -107,7 +107,8 @@
     (m/runApp
      (m/MaterialApp
       .title "idiom | An experimental dictionary for Tibetan translators"
-      .theme (m/ThemeData .primarySwatch m/Colors.grey)
+      .theme (m/ThemeData .brightness m/Brightness.dark)
+      #_(m/ThemeData .primarySwatch m/Colors.grey)
       .home
       #_(widget
          :watch [json (get-gzipped-json-asset "assets/dictionary.json")]
