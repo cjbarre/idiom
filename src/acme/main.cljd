@@ -106,7 +106,7 @@
   (let [dictionary (await (get-json-asset "assets/dictionary.json"))]
     (m/runApp
      (m/MaterialApp
-      .title "Welcome to Flutter"
+      .title "idiom | An experimental dictionary for Tibetan translators"
       .theme (m/ThemeData .primarySwatch m/Colors.grey)
       .home
       #_(widget
