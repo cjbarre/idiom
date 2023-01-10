@@ -3,6 +3,7 @@
             ["package:flutter/rendering.dart" :as fr]
             ["package:flutter/services.dart" :as ds]
             ["package:flutter/widgets.dart" :as fw]
+            ["package:flutter/painting.dart" :as fp]
             ["dart:typed_data" :as td]
             ["dart:convert" :as convert]
             ["dart:io" :as io :refer [File stdout]]
@@ -12,8 +13,12 @@
             [cljd.string :as s]
             [acme.dictionary :refer [lookup-sections lookup-definitions]]))
 
-(def default-text-field-value 
-  "RIGS KYI BU RNAMS LEGS PAR DGE BA'I SEMS KYIS NYON CIG")
+(def default-text-field-value
+  "rigs kyi bu rnams legs par dge ba'i sems kyis nyon cig")
+
+(def source-display-names
+  {"tshig-mdzod-chen-mo-tib" "tshig mdzod chen mo"
+   "JimValby" "Jim Valby"})
 
 (defn word-tile-component
   [{:keys [word lookup-results]}]
@@ -26,7 +31,7 @@
                 .crossAxisAlignment fr/CrossAxisAlignment.stretch
                 .children
                 (mapcat (fn [x]
-                          [(m/Text (get x "source") .style (m/TextStyle .fontWeight m/FontWeight.bold))
+                          [(m/Text (or (source-display-names (get x "source")) (get x "source")) .style (m/TextStyle .fontWeight m/FontWeight.bold))
                            (m/Text "")
                            (m/Text (str "• " (get x "definition")))
                            #_(m/Text (->> (s/split (get x "definition") #"/")
@@ -50,7 +55,10 @@
    m/SingleChildScrollView
    m/Column
    .children
-   (concat [(m/Container
+   (concat [#_(m/Row
+             .children [(m/Container .child (fw/Image.asset "assets/idiom-logo-square.png" .width 64 .height 64)
+                                     .padding (m/EdgeInsets.only .top 16 .left 16))])
+            (m/Container
              .padding (m/EdgeInsets.all 8)
              .margin (m/EdgeInsets.only .top 8)
              .child (m/TextFormField

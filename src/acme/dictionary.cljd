@@ -65,6 +65,6 @@
 (defn lookup-definitions
   [dictionary words]
   (map #(assoc {}
-               (s/upper-case (or % "Not Found"))
+               (or % "Not Found")
                (sort-by (fn [x] (get x "priority")) (get-in dictionary [(handle-special-cases %) "definitions"])))
        (filter #(not (nil? %)) words)))
