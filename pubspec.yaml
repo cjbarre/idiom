@@ -74,6 +74,8 @@ flutter:
     - assets/jim-valby-take-5000-newlines.edn.gz
     - assets/dictionary.json.gz
     - assets/dictionary.json
+    - assets/idiom-favicon.png
+    - assets/idiom-logo-square.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
