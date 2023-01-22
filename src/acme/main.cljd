@@ -34,10 +34,6 @@
                           [(m/Text (or (source-display-names (get x "source")) (get x "source")) .style (m/TextStyle .fontWeight m/FontWeight.bold))
                            (m/Text "")
                            (m/Text (str "• " (get x "definition")))
-                           #_(m/Text (->> (s/split (get x "definition") #"/")
-                                          (filter #(and (not (s/blank? %)) (not (nil? %))))
-                                          (map #(str "• " %))
-                                          (s/join "\n")))
                            (m/Text "")])
                         lookup-results)))]))
 
@@ -47,18 +43,12 @@
    :let [state (atom {:syllables-only? false
                       :search-string default-text-field-value})]
    :watch [as state]
-   (m/Scaffold
-    #_#_.appBar (m/AppBar
-                 .title
-                 (m/Text (:hello dictionary))))
+   (m/Scaffold)
    .body
    m/SingleChildScrollView
    m/Column
    .children
-   (concat [#_(m/Row
-             .children [(m/Container .child (fw/Image.asset "assets/idiom-logo-square.png" .width 64 .height 64)
-                                     .padding (m/EdgeInsets.only .top 16 .left 16))])
-            (m/Container
+   (concat [(m/Container
              .padding (m/EdgeInsets.all 8)
              .margin (m/EdgeInsets.only .top 8)
              .child (m/TextFormField
@@ -96,11 +86,7 @@
          ByteData->utf8
          (io/gzip.decode)
          (convert/utf8.decode)
-         (convert/json.decode))
-    #_(await (r/read-string (->> file
-                                 ByteData->utf8
-                                 (io/gzip.decode)
-                                 (convert/utf8.decode))))))
+         (convert/json.decode))))
 
 (defn get-json-asset [path]
   (let [file (await (ds/rootBundle.load path))]
@@ -116,13 +102,7 @@
      (m/MaterialApp
       .title "idiom | An experimental dictionary for Tibetan translators"
       .theme (m/ThemeData .brightness m/Brightness.dark)
-      #_(m/ThemeData .primarySwatch m/Colors.grey)
       .home
-      #_(widget
-         :watch [json (get-gzipped-json-asset "assets/dictionary.json")]
-         (if json
-           (m/Text (str "Loaded " (count json) " " (-> json first key)))
-           (m/Text "Loading")))
       (dictionary-component dictionary)))))
 
 
