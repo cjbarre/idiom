@@ -80,14 +80,6 @@
   (let [buffer (.-buffer byte-data)]
     (.asUint8List buffer (.-offsetInBytes byte-data) (.-lengthInBytes byte-data))))
 
-(defn get-gzipped-json-asset [path]
-  (let [file (await (ds/rootBundle.load path))]
-    (->> file
-         ByteData->utf8
-         (io/gzip.decode)
-         (convert/utf8.decode)
-         (convert/json.decode))))
-
 (defn get-json-asset [path]
   (let [file (await (ds/rootBundle.load path))]
     (->> file
